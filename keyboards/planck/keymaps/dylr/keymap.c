@@ -1,12 +1,6 @@
-// This is the canonical layout file for the Quantum project. If you want to add another keyboard,
-// this is the style you want to emulate.
-
 #include "planck.h"
 #include "action_layer.h"
-//#ifdef AUDIO_ENABLE
-  //#include "audio.h"
-//#endif
-#include "eeconfig.h"
+
 
 extern keymap_config_t keymap_config;
 
@@ -14,27 +8,20 @@ extern keymap_config_t keymap_config;
 // matrix below.  The underscores don't mean anything - you can have a layer
 // called STUFF or any other name.  Layer names don't all need to be of the same
 // length, obviously, and you can also skip them entirely and just use numbers.
-#define _QWERTY 0
-#define _LOWER  1
-#define _RAISE  2
-#define _NUM    3
-//#define _PLOVER 5
-//#define _ADJUST 16
+enum planck_layers {
+  _QWERTY,
+  _LOWER,
+  _RAISE,
+  _NUM,
+};
 
 enum planck_keycodes {
   QWERTY = SAFE_RANGE,
-  COLEMAK,
-  DVORAK,
-  PLOVER,
   LOWER,
   RAISE,
-  BACKLIT,
   EXT_PLV
 };
 
-// Fillers to make layering more clear
-#define _______ KC_TRNS
-#define XXXXXXX KC_NO
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
@@ -53,8 +40,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [_QWERTY] = {
   { KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSPC },
   { KC_ESC,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT },
-  { KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_ENT  },
-  { MO(_NUM),KC_LCTL, KC_LALT, KC_LGUI, LOWER,   KC_SPC,  KC_SPC,  RAISE,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT }
+  { KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, RSFT_T(KC_ENT) },
+  { TT(_NUM),KC_LCTL, KC_LALT, KC_LGUI, LOWER,   KC_SPC,  KC_SPC,  RAISE,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT }
 },
 
 
@@ -71,18 +58,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 
 [_LOWER] = { 
-  { KC_TILD  , KC_EXLM , KC_AT   , KC_HASH , KC_DLR  , KC_PERC , KC_CIRC , KC_AMPR , KC_ASTR , KC_LPRN   , KC_RPRN , KC_DELT },
-  { KC_PAUSE , KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_MINS , KC_EQL  , KC_LCBR   , KC_RCBR , KC_BSLS },
-  { _______  , KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_UNDS , KC_PLUS , KC_LBRC   , KC_RBRC , _______ },
-  { _______  , _______ , _______ , _______ , _______ , _______ , _______  , _______ , KC_HOME , KC_PGDOWN , KC_PGUP , KC_END  }
+  { KC_TILD, KC_EXLM, KC_AT  , KC_HASH, KC_DLR , KC_PERC, KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN  , KC_RPRN, KC_DELT },
+  { _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_MINS, KC_EQL , KC_LCBR  , KC_RCBR, KC_BSLS },
+  { _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_UNDS, KC_PLUS, KC_LBRC  , KC_RBRC, _______ },
+  { _______, _______, _______, _______, _______, _______, _______, _______, KC_HOME, KC_PGDOWN, KC_PGUP, KC_END  }
 },
 
 
 /* Raise
  * ,-----------------------------------------------------------------------------------.
- * |   `  |      |      |      |      |      | Home | PagUp| PagDn| End  |      | Del  |
+ * |   `  |      |      |      |      |      |      |PrvTrk| Pause|NxtTrk|      | Del  |
  * |------+------+------+------+------+-------------+------+------+------+------+------|
- * |Pause |      |      |      |      |      |      |ShTab |CtShTb|      |      |      |
+ * |Pause |      |      |      |      |      |      |CShTab| CtTb |      |      |      |
  * |------+------+------+------+------+------|------+------+------+------+------+------|
  * |      |      |      |      |      |      | Left |  Up  | Down | Right|      |Enter |
  * |------+------+------+------+------+------+------+------+------+------+------+------|
@@ -91,32 +78,40 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 
 [_RAISE] = { 
-  { KC_GRV   , KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_HOME , KC_PGDOWN       , KC_PGUP      , KC_END    , KC_NO   , KC_DELT },
-  { KC_PAUSE , KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_NO   , LCTL(S(KC_TAB)) , LCTL(KC_TAB) , KC_NO     , KC_NO   , KC_NO   },
-  { _______  , KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_LEFT , KC_DOWN         , KC_UP        , KC_RGHT   , KC_NO   , _______ },
-  { _______  , _______ , _______ , _______ , _______ , _______ , _______ , _______         , KC_HOME      , KC_PGDOWN , KC_PGUP , KC_END  }
+  { KC_GRV , XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_MPRV, KC_MPLY        , KC_MNXT     , XXXXXXX  , XXXXXXX, KC_DELT },
+  { _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_BTN4, LCTL(S(KC_TAB)), LCTL(KC_TAB), KC_BTN5  , XXXXXXX, XXXXXXX },
+  { _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_MUTE        , XXXXXXX     , XXXXXXX  , XXXXXXX, _______ },
+  { _______, _______, _______, _______, _______, _______, _______, _______        , KC_HOME     , KC_PGDOWN, KC_PGUP, KC_END  }
 },
 
 
+/* Num
+ * ,-----------------------------------------------------------------------------------.
+ * |      |  F1  |  F2  |  F3  |  F4  |      |      |   7  |   8  |   9  |      |BackSp|
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * |      |  F5  |  F6  |  F7  |  F8  |      |      |   4  |   5  |   6  |      |      |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * | Shift|  F9  |  F10 |  F11 |  F12 |      |      |   1  |   2  |   3  |      |Enter |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
+ * |      |      |      |      |      |    Space    |      |   0  |      |      |      |
+ * `-----------------------------------------------------------------------------------'
+ */
+
+
 [_NUM] = { 
-  { KC_NO   , KC_F1 , KC_F2  , KC_F3  , KC_F4  , KC_NO  , KC_NO  , KC_7  , KC_8 , KC_9  , KC_NO , KC_INSERT } ,
-  { KC_NO   , KC_F5 , KC_F6  , KC_F7  , KC_F8  , KC_NO  , KC_NO  , KC_4  , KC_5 , KC_6  , KC_NO , _______ } ,
-  { _______ , KC_F9 , KC_F10 , KC_F11 , KC_F12 , KC_NO  , KC_NO  , KC_1  , KC_2 , KC_3  , KC_NO , _______ } ,
-  { _______ , KC_NO , KC_NO  , KC_NO  , KC_NO  , KC_ENT , KC_ENT , KC_NO , KC_0 , KC_NO , KC_NO , _______ }
+  { XXXXXXX, KC_F1   , KC_F2  , KC_F3  , KC_F4  , XXXXXXX, XXXXXXX, KC_7   , KC_8, KC_9   , XXXXXXX, KC_BSPC },
+  { KC_PAUS, KC_F5   , KC_F6  , KC_F7  , KC_F8  , XXXXXXX, XXXXXXX, KC_4   , KC_5, KC_6   , XXXXXXX, XXXXXXX },
+  { _______, KC_F9   , KC_F10 , KC_F11 , KC_F12 , XXXXXXX, XXXXXXX, KC_1   , KC_2, KC_3   , XXXXXXX, _______ },
+  { _______, XXXXXXX , XXXXXXX, XXXXXXX, XXXXXXX, _______, _______, XXXXXXX, KC_0, XXXXXXX, XXXXXXX, XXXXXXX }
 }
 };
 
-
-void persistant_default_layer_set(uint16_t default_layer) {
-  eeconfig_update_default_layer(default_layer);
-  default_layer_set(default_layer);
-}
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     case QWERTY:
       if (record->event.pressed) {
-        persistant_default_layer_set(1UL<<_QWERTY);
+        set_single_persistent_default_layer(_QWERTY);
       }
       return false;
       break;
